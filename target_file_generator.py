@@ -35,4 +35,4 @@ with open(filename, "w+") as f:
     for ip in ipaddress.IPv4Network(uni):
         f.write(str(ip) + '\n')
 
-print "Successfully created a file named " + filename + "here, with 256 IP addresses and your specified octets."
+print "Successfully created a file named " + filename + " here, with 256 IP addresses and your specified octets."
