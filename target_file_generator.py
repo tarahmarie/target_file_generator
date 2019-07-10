@@ -13,47 +13,24 @@ LINE_WRITE_GROUPING = 10
 
 class CIDR_IP_generator:
     prefix = ''
-    beginning = 0
-    cidr = '/24'
-    end = None
+    cidr = 24
     num_addresses = 0
 
-    def __init__(self, prefix, cidr='/24', beginning=0, end=None):
+    def __init__(self, prefix, cidr=24):
         self.prefix = prefix
-        self.beginning = beginning
-
-        if end:
-            self.end = end
-
         self.cidr = cidr
-
-    def use_cidr(self):
-        return None == self.end
 
     def get_zero(self, address):
         zeroth = '%s.0'.decode('utf-8') % self.prefix
         return iter((IPv4Address(zeroth),))
 
     def get_last(self, address):
-        zeroth = '%s.%d'.decode('utf-8') % (self.prefix, self.num_addresses-1)
-        return iter((IPv4Address(zeroth),))
-
-    def add_zero(self, address):
-        """
-        >>> yes_because_0 = CIDR_IP_generator(None, None)
-        >>> yes_because_0.add_zero('1.1.1.0')
-        True
-        >>> yes_because_cidr = CIDR_IP_generator(None, None)
-        >>> yes_because_cidr.add_zero('1.1.1.0/24')
-        True
-        """
-        if self.use_cidr():
-            return True
-        return 0 == int(address.split('.')[-1])
+        last = '%s.%d'.decode('utf-8') % (self.prefix, self.num_addresses-1)
+        return iter((IPv4Address(last),))
 
     def generate(self):
         """
-        >>> generator1 = CIDR_IP_generator('1.1.1', cidr='0/24')
+        >>> generator1 = CIDR_IP_generator('1.1.1', cidr=24)
         >>> addresses = generator1.generate()
         >>> str(next(addresses).exploded)
         '1.1.1.0'
@@ -61,30 +38,37 @@ class CIDR_IP_generator:
         '1.1.1.1'
         >>> str([next(addresses) for x in range(0, 250)][-1].exploded)
         '1.1.1.251'
-        >>> generator2 = CIDR_IP_generator('10.254.0', cidr='0/16')
+        >>> generator2 = CIDR_IP_generator('10.254.0')
         >>> addresses = generator2.generate()
         >>> str(next(addresses).exploded)
         '10.254.0.0'
         >>> str(next(addresses).exploded)
         '10.254.0.1'
         """
-        compressed = '%s.%s' % (self.prefix, self.cidr)
+        compressed = '%s.0/%s' % (self.prefix, self.cidr)
         utf_string = compressed.decode('utf-8')
         network = IPv4Network(utf_string)
         self.num_addresses = network.num_addresses
-        if self.add_zero:
-            zeroth = self.get_zero(compressed)
-            last = self.get_last(compressed)
-            return chain(zeroth, network.hosts(), last)
-        return network.hosts()
+        zeroth = self.get_zero(compressed)
+        last = self.get_last(compressed)
+        return chain(zeroth, network.hosts(), last)
 
     def write(self, filename, host_iterator):
+        """
+        >>> generator1 = CIDR_IP_generator('1.1.1', cidr=24)
+        >>> lines = generator1.generate()
+        >>> generator1.write('.test.out', lines)
+        >>> sum(1 for line in open('.test.out'))
+        256
+        """
         start = 0
         counter = count(start, LINE_WRITE_GROUPING)
 
+        open(filename, 'w').close()
+
         with open(filename, 'a+') as f:
             limit = counter.next()
-            while limit <= self.num_addresses:
+            while limit < self.num_addresses:
                 lines = []
                 for x in range(LINE_WRITE_GROUPING):
                     try:
@@ -93,12 +77,11 @@ class CIDR_IP_generator:
                         lines.append(line)
                     except:
                         break
-                    f.writelines(lines)
+                f.writelines(lines)
                 limit = counter.next()
 
-        print "Successfully created a file named " + filename + " here, with 256 IP addresses and your specified octets."
 
-cidr_list = ['/%d' % x for x in range(1, 32)]
+cidr_list = [x for x in range(1, 25)]
 
 def main():
     parser = argparse.ArgumentParser(description='This script generates a custom text file of 256 IPv4 addresses for use as target files for nmap, onetwopunch, and other iterators and enumerators.')
@@ -132,7 +115,8 @@ def main():
                         dest="cidr",
                         choices=cidr_list,
                         required=False,
-                        default="0/24",
+                        type=int,
+                        default=24,
                         help='cidr to generate')
 
     args = parser.parse_args()
@@ -141,6 +125,7 @@ def main():
     generator = CIDR_IP_generator(prefix=prefix, cidr=args.cidr)
     hosts = generator.generate()
     generator.write(args.output_file, hosts)
+    print "Successfully created a file named %s here, with %d IP addresses and your specified octets." % (args.output_file, generator.num_addresses)
 
 if "__main__" == __name__:
     main()
