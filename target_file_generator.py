@@ -98,19 +98,6 @@ def main():
                         required=True,
                         help='first 3 octets of the address')
 
-    # parser.add_argument("-b", "--begin",
-    #                     dest="begin",
-    #                     type=int,
-    #                     required=False,
-    #                     default=0,
-    #                     help='beginning address of fourth octet')
-
-    # parser.add_argument("-e", "--end",
-    #                     dest="end",
-    #                     type=int,
-    #                     required=False,
-    #                     help='ending address of fourth octet')
-
     parser.add_argument("-c", "--cidr",
                         dest="cidr",
                         choices=cidr_list,
