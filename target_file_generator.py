@@ -7,7 +7,6 @@ _author_ = 'tarah'
 import argparse
 from ipaddress import IPv4Address, IPv4Network
 from itertools import chain, count
-import re
 
 LINE_WRITE_GROUPING = 10
 
