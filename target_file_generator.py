@@ -10,9 +10,27 @@ import argparse
 
 parser = argparse.ArgumentParser(description='This script generates a custom text file of 256 IPv4 addresses for use as target files for nmap, onetwopunch, and other iterators and enumerators.')
 
-userInput1 = input('Input the first octet of the address: ')
-userInput2 = input('Input the second octet of the address: ')
-userInput3 = input('Input the third octet of the address: ')
+def readOctetFromUser(query):
+    try:
+        userInput = raw_input(query)
+        verifiedInput = False
+        while not verifiedInput:
+            if userInput.isdigit():
+                userInputInt = int(userInput)
+                if userInputInt >= 0 and userInputInt < 256:
+                    verifiedInput = True
+
+            if not verifiedInput:
+                print ('\'%s\' is not a valid octet. Please try again: (Or press Ctrl-C to quit' % userInput)
+                userInput = raw_input()
+
+        return userInput
+    except KeyboardInterrupt:
+        quit(1)
+
+userInput1 = readOctetFromUser('Input the first octet of the address: ')
+userInput2 = readOctetFromUser('Input the second octet of the address: ')
+userInput3 = readOctetFromUser('Input the third octet of the address: ')
 userInput4 = str(raw_input('What do you want the text file to be named?: '))
 print userInput4
 
