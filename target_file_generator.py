@@ -111,7 +111,8 @@ def main():
     generator = CIDR_IP_generator(prefix=prefix, cidr=args.cidr)
     hosts = generator.generate()
     generator.write(args.output_file, hosts)
-    print "Successfully created a file named %s here, with %d IP addresses and your specified octets." % (args.output_file, generator.num_addresses)
+    print
+    f"Successfully created a file named {args.output_file} here, with {generator.num_addresses:d} IP addresses and your specified octets."
 
 if "__main__" == __name__:
     main()
